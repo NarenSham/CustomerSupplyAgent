@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Customer Supply Agent</title>
+<style>
+:root{--bg:#eef2f7;--ink:#14202e;--mute:#6b7787;--line:#e3e8ef;--card:#fff;--brand:#0176d3;--brand-d:#014486;--brand-l:#e3f1fd;--low:#d83a3a;--soft:#f5f7fa}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1200px 500px at 50% -10%,#dbe9f8,transparent),var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;gap:10px;padding:18px 32px}
+.dot{width:12px;height:12px;border-radius:4px;background:var(--brand);box-shadow:0 0 0 4px var(--brand-l)}
+header b{font-size:17px;letter-spacing:-.2px}header span{color:var(--mute)}
+main{max-width:1480px;margin:0 auto;padding:0 32px 40px}
+.book{position:relative;display:grid;grid-template-columns:1fr 1fr;background:var(--card);border-radius:22px;box-shadow:0 20px 50px rgba(20,32,46,.10),0 2px 6px rgba(20,32,46,.06);overflow:hidden;min-height:680px}
+.book::after{content:'';position:absolute;left:50%;top:0;bottom:0;width:60px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(20,32,46,.07),transparent);pointer-events:none}
+.book::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line);z-index:1}
+.page{padding:28px 32px;display:flex;flex-direction:column;min-width:0}
+.pg-h{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px;gap:12px}
+.pg-h h2{font-size:20px;margin:0;letter-spacing:-.3px}.pg-h p{margin:2px 0 0;color:var(--mute);font-size:13px}
+.kpis{display:flex;gap:10px;margin-bottom:6px}
+.kpi{background:var(--soft);border-radius:12px;padding:8px 14px;min-width:96px}.kpi b{display:block;font-size:20px;line-height:1.2}.kpi small{color:var(--mute)}
+.kpi.warn b{color:var(--low)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mute);flex-wrap:wrap;margin:10px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.chart{display:flex;gap:16px;align-items:flex-end;height:430px;margin-top:14px;padding:30px 8px 0;border-bottom:1px solid var(--line);
+ background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/100% 25%;background-origin:content-box}
+.col{flex:1;height:100%;min-width:0}.plot{position:relative;height:100%}
+.ghost,.bar{position:absolute;bottom:0;left:50%;width:34px;transform:translateX(-50%);border-radius:10px 10px 0 0}
+.ghost{background:var(--brand-l);border:1px dashed #a9d2f7;border-bottom:0}
+.bar{background:linear-gradient(180deg,#3aa0f5,var(--brand));transition:height 1.2s cubic-bezier(.2,.8,.2,1),background .4s}
+.bar.low{background:linear-gradient(180deg,#f06a6a,var(--low))}
+.val{position:absolute;top:-22px;left:-10px;right:-10px;text-align:center;font-weight:700;font-size:13px}
+.rp{position:absolute;left:0;right:0;border-top:2px dashed var(--low);z-index:2;opacity:.85}
+.rp span{position:absolute;right:0;top:-18px;font-size:10px;color:var(--low);font-weight:600;background:#fff;padding:0 4px;border-radius:4px}
+.names{display:flex;gap:16px;padding:10px 8px 0}.names div{flex:1;text-align:center;font-weight:600;font-size:13px}
+.names small{display:block;font-weight:400;color:var(--mute)}
+#log{flex:1;min-height:280px;max-height:380px;overflow:auto;display:flex;flex-direction:column;gap:8px;background:var(--soft);border-radius:16px;padding:14px;margin-bottom:12px}
+.m{padding:9px 14px;border-radius:16px;max-width:82%;animation:in .25s ease}
+.you{background:var(--brand);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.agent{background:#fff;border:1px solid var(--line);align-self:flex-start;border-bottom-left-radius:4px}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button,select,input{font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px}
+button{cursor:pointer;color:var(--brand);font-weight:600}button:hover{background:var(--soft)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+input{flex:1;min-width:140px}
+#mic{position:relative;display:inline-flex;align-items:center;gap:10px;background:var(--brand);color:#fff;border-color:var(--brand);padding:10px 22px;border-radius:999px;font-size:15px;min-width:150px;justify-content:center;transition:background .3s}
+#mic:hover{background:var(--brand-d)}
+#mic.busy{opacity:.7;pointer-events:none}
+#mic.on{background:var(--low);border-color:var(--low);animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(216,58,58,.55)}100%{box-shadow:0 0 0 20px rgba(216,58,58,0)}}
+.eq{display:none;align-items:center;gap:2px;height:16px}#mic.on .eq{display:inline-flex}
+.eq i{width:3px;height:4px;background:#fff;border-radius:2px;animation:eq 1s ease-in-out infinite}
+.eq i:nth-child(2){animation-delay:.15s}.eq i:nth-child(3){animation-delay:.3s}.eq i:nth-child(4){animation-delay:.45s}
+@keyframes eq{0%,100%{height:4px}50%{height:16px}}
+.live{display:none;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--low);background:#fdeaea;padding:3px 10px;border-radius:999px}
+.live.on{display:inline-flex}.live::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--low);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.25}}
+h3{font-size:14px;margin:18px 0 8px}
+table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--mute);font-weight:600;padding:6px 10px;border-bottom:1px solid var(--line)}
+td{padding:8px 10px;border-bottom:1px solid var(--line)}
+.pill{padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;background:#e8ebef}.pill.confirmed{background:#d6f3dc;color:#1c5a32}.pill.draft{background:#fff0cf;color:#6b4300}.pill.failed{background:#fde6e6;color:var(--low)}
+.empty{color:var(--mute)}
+@media (max-width:980px){.book{grid-template-columns:1fr}.book::before,.book::after{display:none}.page+.page{border-top:1px solid var(--line)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style><script src="https://cdn.jsdelivr.net/npm/livekit-client@2/dist/livekit-client.umd.min.js"></script></head><body>
+<header><i class="dot"></i><b>Customer Supply Agent</b><span>Demo</span></header>
+<main>
+<div class="book">
+  <section class="page">
+    <div class="pg-h"><div><h2>Operator view</h2><p>Inventory across all customers</p></div>
+      <div class="kpis"><div class="kpi"><b id="k1">-</b><small>cases on hand</small></div><div class="kpi warn"><b id="k2">-</b><small>below reorder</small></div></div></div>
+    <div class="legend"><span><i style="background:var(--brand)"></i>On hand</span><span><i style="background:var(--low)"></i>At/below reorder</span><span><i style="background:var(--brand-l);border:1px dashed #a9d2f7"></i>Starting stock</span><span><i style="background:none;border-top:2px dashed var(--low);height:0;width:14px;border-radius:0"></i>Reorder point</span></div>
+    <div class="chart" id="chart"></div><div class="names" id="names"></div>
+  </section>
+  <section class="page">
+    <div class="pg-h"><div><h2>Customer view</h2><p>This caller only</p></div><span class="live" id="live">LIVE</span></div>
+    <div id="log" aria-live="polite"></div>
+    <div class="row">
+      <button id="mic"><span class="eq"><i></i><i></i><i></i><i></i></span><span id="miclbl">Start call</span></button>
+      <select id="lang" aria-label="Language"><option value="en-CA">English</option><option value="fr-CA">Français</option></select>
+      <select id="persona" aria-label="Personality"><option value="warm">Canadian · Warm &amp; nice</option><option value="pro">Canadian · Calm &amp; professional</option><option value="upbeat">Canadian · Upbeat &amp; chatty</option></select>
+      <button id="reset">Reset demo</button>
+    </div>
+    <form id="f" class="row" style="margin-top:8px"><input id="t" placeholder="Or type here" autocomplete="off"><button>Send</button></form>
+    <h3>This customer's orders</h3>
+    <div id="orders"></div>
+  </section>
+</div>
+</main>
+<script>
+const sid=crypto.randomUUID(),$=id=>document.getElementById(id);
+let room=null;const segs={},last={};
+const lang=()=>$('lang').value;
+function say(t){return t.replace(/\b\d{4}\b/g,m=>m.split('').join(' ')).replace(/[*_#`]/g,'')}   // order numbers digit by digit
+function add(c,t){const d=document.createElement('div');d.className='m '+c;d.textContent=t;$('log').append(d);$('log').scrollTop=1e9;return d}
+function speak(t){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(say(t));u.lang=lang();speechSynthesis.speak(u)}   // typed chat only; calls use LiveKit voice
+function setMic(state){const m=$('mic');m.classList.toggle('on',state==='on');m.classList.toggle('busy',state==='busy');
+  $('miclbl').textContent=state==='on'?'End call':state==='busy'?'Connecting...':'Start call';$('live').classList.toggle('on',state==='on')}
+async function send(text){
+  if(!text.trim())return;add('you',text);
+  try{const r=await fetch('api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({session_id:sid,text,persona:$('persona').value})});
+    const d=await r.json();const reply=d.reply||('Error: '+(d.detail||r.status));add('agent',reply);if(d.reply)speak(reply)}
+  catch(e){add('agent','Error: '+e.message)}
+  refresh()}
+async function refresh(){
+  try{const d=await (await fetch('api/inventory')).json(),items=d.items,fr=lang().startsWith('fr');
+    const max=Math.ceil(Math.max(...items.map(i=>Math.max(i.start,i.reorder)))*1.1/10)*10;
+    $('chart').innerHTML=items.map(i=>{const low=i.on_hand<=i.reorder;
+      return `<div class="col"><div class="plot"><div class="ghost" style="height:${100*i.start/max}%"></div><div class="bar ${low?'low':''}" style="height:${100*i.on_hand/max}%"><span class="val">${i.on_hand}</span></div><div class="rp" style="bottom:${100*i.reorder/max}%"><span>Reorder ${i.reorder}</span></div></div></div>`}).join('');
+    $('names').innerHTML=items.map(i=>`<div>${fr?i.fr:i.en}<small>${i.on_hand} / ${i.start} cases</small></div>`).join('');
+    $('k1').textContent=items.reduce((a,i)=>a+i.on_hand,0);$('k2').textContent=items.filter(i=>i.on_hand<=i.reorder).length}catch(e){}
+  try{const d=await (await fetch('api/orders?session_id='+sid)).json();
+    $('orders').innerHTML=d.orders.length?`<table><tr><th>Order #</th><th>Product</th><th>Qty</th><th>Status</th></tr>${d.orders.map(o=>`<tr><td>${o.id}</td><td>${o.sku}</td><td>${o.qty}</td><td><span class="pill ${o.status}">${o.status}</span></td></tr>`).join('')}</table>`:'<div class="empty">No orders yet for this customer.</div>'}catch(e){}}
+$('f').onsubmit=e=>{e.preventDefault();send($('t').value);$('t').value=''};
+$('reset').onclick=async()=>{await fetch('api/reset',{method:'POST'});$('log').innerHTML='';refresh()};
+$('mic').onclick=async()=>{
+  const L=window.LivekitClient;
+  if(room){await room.disconnect();return}
+  setMic('busy');
+  try{
+    const t=await (await fetch(`api/token?session_id=${sid}&persona=${$('persona').value}&lang=${lang().slice(0,2)}`)).json();
+    if(!t.token)throw new Error(t.detail||'no token');
+    room=new L.Room();
+    room.on(L.RoomEvent.TrackSubscribed,tr=>{if(tr.kind==='audio')document.body.append(tr.attach())});
+    room.on(L.RoomEvent.Disconnected,()=>{room=null;setMic('off')});
+    room.registerTextStreamHandler('lk.transcription',async(reader,p)=>{
+      const text=(await reader.readAll()).trim();if(!text)return;
+      const id=reader.info.attributes?.['lk.segment_id']||reader.info.id,role=p.identity===room.localParticipant.identity?'you':'agent',lb=last[role];
+      const prev=segs[id]||(lb&&$('log').lastElementChild===lb&&(text.startsWith(lb.textContent)||lb.textContent.startsWith(text))?lb:null);
+      if(prev){prev.textContent=text;segs[id]=prev}else{segs[id]=add(role,text)}
+      last[role]=segs[id];$('log').scrollTop=1e9;refresh()});
+    await room.connect(t.url,t.token);
+    await room.localParticipant.setMicrophoneEnabled(true);
+    setMic('on');
+  }catch(e){add('agent','Call failed: '+e.message);room=null;setMic('off')}};
+$('lang').onchange=refresh;
+refresh();setInterval(refresh,4000);
+</script></body></html>

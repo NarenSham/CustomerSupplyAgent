@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+databricks-sdk>=0.40
+openai
+livekit-api
+mlflow>=3.1

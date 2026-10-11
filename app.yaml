@@ -1,0 +1,16 @@
+command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+env:
+  - name: DATABRICKS_WAREHOUSE_ID
+    valueFrom: sql-warehouse        # app resource key
+  - name: MODEL_ENDPOINT
+    valueFrom: serving-endpoint     # app resource key (the serving endpoint name, not the system.ai path)
+  - name: CATALOG
+    value: workspace
+  - name: SCHEMA
+    value: voice_demo
+  - name: LIVEKIT_URL
+    value: <update livekit url>
+  - name: LIVEKIT_API_KEY
+    value: <update livekit api>         # add as app secret resources
+  - name: LIVEKIT_API_SECRET
+    value: <update livekit api secret>
