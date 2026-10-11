@@ -157,12 +157,6 @@ DATABRICKS_HOST  DATABRICKS_TOKEN  DATABRICKS_WAREHOUSE_ID  MODEL_ENDPOINT
 - The worker must be running to answer calls. Worker does not run inside Databricks.
 - French quality depends on the Cartesia voice you choose.
 
-## Security
-
-- Never commit `.env` or real keys in `app.yaml`. Add `.env` to `.gitignore`.
-- Rotate any key or token that has been pasted into a chat, ticket or commit.
-- Use the narrowest Databricks token your workspace allows and revoke it after the demo.
-
 ## Credits
 
 Built on ideas and starter work from [@datasciencemonkey](https://github.com/datasciencemonkey). Powered by Databricks, LiveKit, Deepgram, Cartesia and MLflow.
